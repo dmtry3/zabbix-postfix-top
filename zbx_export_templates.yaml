@@ -1,0 +1,42 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: dc579cd7a1a34222933f24f52a68bcd8
+      name: 'Linux servers'
+  templates:
+    - uuid: d4625d06c7654ef0b92850c9710ba2e6
+      template: 'Posfix top'
+      name: 'Posfix top'
+      groups:
+        - name: 'Linux servers'
+      items:
+        - uuid: eee6c369d90846b6b9448e3a47371091
+          name: 'Check top recipents over {$LIMIT_RECV}'
+          key: 'check.top["recv",{$LIMIT_RECV}]'
+          delay: 10m
+          history: 14d
+          value_type: CHAR
+          triggers:
+            - uuid: ad590f559e82422a8202b9cd8ba69bc0
+              expression: 'find(/Posfix top/check.top["recv",{$LIMIT_RECV}],,"like","@")=1'
+              name: '{HOST.NAME}: Больше {$LIMIT_RECV} сообщений за день для {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              manual_close: 'YES'
+        - uuid: 60e7ada462664212b44c94ecaaf0bb06
+          name: 'Check top senders over {$LIMIT_SNDR}'
+          key: 'check.top["sndr",{$LIMIT_SNDR}]'
+          delay: 10m
+          history: 14d
+          value_type: CHAR
+          triggers:
+            - uuid: 4220188b77f345b19cdd63863d102d7d
+              expression: 'find(/Posfix top/check.top["sndr",{$LIMIT_SNDR}],,"like","@")=1'
+              recovery_mode: NONE
+              name: '{HOST.NAME}: Больше {$LIMIT_SNDR} сообщений за день от {ITEM.LASTVALUE1}'
+              priority: DISASTER
+              manual_close: 'YES'
+      macros:
+        - macro: '{$LIMIT_RECV}'
+          value: '100'
+        - macro: '{$LIMIT_SNDR}'
+          value: '100'
